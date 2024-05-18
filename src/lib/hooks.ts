@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Job, JobItem } from "./types";
+import { JobDescription, JobItem } from "./types";
 import { BASE_API_URL } from "./constants";
 
 const MAX_JOB_ITEMS = 7;
 
 export const useFetchJobItems = (searchText: string) => {
-  const [jobItems, setJobItems] = useState<Job[]>([]);
+  const [jobItems, setJobItems] = useState<JobItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // derived state
@@ -62,7 +62,7 @@ export const useActiveJobItemId = () => {
 };
 
 export const useFetchJobItemById = (jobId: number | null) => {
-  const [job, setJob] = useState<JobItem | null>(null);
+  const [job, setJob] = useState<JobDescription | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export const useFetchJobItemById = (jobId: number | null) => {
       try {
         const response = await fetch(url);
         const data = await response.json();
-        console.log(data);
+        setJob(data.jobItem);
       } catch (error) {
         console.error(error);
       } finally {

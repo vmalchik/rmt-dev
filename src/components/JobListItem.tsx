@@ -1,8 +1,8 @@
-import { Job } from "../lib/types";
+import { JobItem } from "../lib/types";
 import BookmarkIcon from "./BookmarkIcon";
 
 type JobListItemProps = {
-  job: Job;
+  job: JobItem;
 };
 
 export default function JobListItem({ job }: JobListItemProps) {

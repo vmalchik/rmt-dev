@@ -1,4 +1,4 @@
-export type Job = {
+export type JobItem = {
   id: number;
   title: string;
   badgeLetters: string;
@@ -8,19 +8,14 @@ export type Job = {
   daysAgo: number;
 };
 
-export type JobItem = {
-  id: number;
-  title: string;
-  badgeLetters: string;
-  company: string;
+// Intersection type to combine JobItem with additional properties
+export type JobDescription = JobItem & {
   companyURL: string;
   coverImgURL: string;
-  daysAgo: number;
   description: string;
   duration: string;
   location: string;
-  qualifications: string[];
-  relevanceScore: number;
-  reviews: string[];
+  qualifications: Array<string>; // two different ways to type arrays
+  reviews: string[]; // alternative way to type arrays
   salary: string;
 };
