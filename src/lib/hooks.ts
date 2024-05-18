@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { Job } from "./types";
 
+const MAX_JOB_ITEMS = 7;
+
 export const useFetchJobItems = (searchText: string) => {
   const [jobItems, setJobItems] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // derived state
+  const jobItemsSliced = jobItems.slice(0, MAX_JOB_ITEMS);
 
   // Note: React recommends fetching data in response to user action inside event handler
   //       However, here we are using useEffect for usage/practice
@@ -32,5 +37,5 @@ export const useFetchJobItems = (searchText: string) => {
     fetchData();
   }, [searchText]);
 
-  return { jobItems, isLoading };
+  return { jobItemsSliced, isLoading };
 };
