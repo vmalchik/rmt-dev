@@ -16,11 +16,13 @@ import SortingControls from "./SortingControls";
 function App() {
   const [searchText, setSearchText] = useState("");
   const [jobItems, setJobItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Note: React recommends fetching data in response to user action inside event handler
   //       However, here we are using useEffect for usage/practice
   useEffect(() => {
     if (!searchText) return;
+    setIsLoading(true);
     const url = new URL(
       "https://bytegrad.com/course-assets/projects/rmtdev/api/data"
     );
@@ -29,9 +31,15 @@ function App() {
 
     // Mock backend server will always return random amount of data
     const fetchData = async () => {
-      const response = await fetch(url);
-      const data = await response.json();
-      setJobItems(data.jobItems);
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        setJobItems(data.jobItems);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchData();
@@ -53,7 +61,7 @@ function App() {
             <ResultsCount />
             <SortingControls />
           </SidebarTop>
-          <JobList jobItems={jobItems} />
+          <JobList jobItems={jobItems} isLoading={isLoading} />
           <PaginationControls />
         </Sidebar>
         <JobItemContent />
