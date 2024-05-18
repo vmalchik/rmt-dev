@@ -11,7 +11,6 @@ import { useQuery } from "@tanstack/react-query";
 // https://www.npmjs.com/package/react-query
 // https://www.npmjs.com/package/swr
 
-const MAX_JOB_ITEMS = 7;
 const MAX_SEARCH_DEBOUNCE_TIME_MS = 250; // 0.25 seconds
 const MAX_CACHE_STALE_TIME_MS = 1000 * 60 * 60; // 1 hour
 
@@ -31,9 +30,9 @@ export const useFetchJobItems = (searchText: string) => {
   const [jobItems, setJobItems] = useState<JobItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // derived state
-  const jobItemsSliced = jobItems.slice(0, MAX_JOB_ITEMS);
-  const totalJobItems = jobItems.length;
+  // derived state - removed to prevent hook from being "too opinionated"
+  // const jobItemsSliced = jobItems.slice(0, MAX_JOB_ITEMS);
+  // const totalJobItems = jobItems.length;
 
   useEffect(() => {
     if (!debouncedSearchText) return;
@@ -66,7 +65,7 @@ export const useFetchJobItems = (searchText: string) => {
     fetchData();
   }, [debouncedSearchText]);
 
-  return { jobItemsSliced, isLoading, totalJobItems } as const;
+  return { jobItems, isLoading } as const;
 };
 
 // **    Original implementation using useState and useEffect   **
