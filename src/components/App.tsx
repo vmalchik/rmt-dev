@@ -13,6 +13,7 @@ import PaginationControls from "./PaginationControls";
 import ResultsCount from "./ResultsCount";
 import SortingControls from "./SortingControls";
 import { useFetchJobItems } from "../lib/hooks";
+import { Toaster } from "react-hot-toast";
 
 const MAX_JOB_ITEMS = 7;
 
@@ -46,6 +47,7 @@ function App() {
         <JobItemContent />
       </Container>
       <Footer />
+      <Toaster position={"top-right"} />
     </>
   );
 }
