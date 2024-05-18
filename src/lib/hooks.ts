@@ -14,58 +14,118 @@ import { useQuery } from "@tanstack/react-query";
 const MAX_SEARCH_DEBOUNCE_TIME_MS = 250; // 0.25 seconds
 const MAX_CACHE_STALE_TIME_MS = 1000 * 60 * 60; // 1 hour
 
+// **    Original implementation using useState and useEffect   **
+// **    Replaced with useQuery from react-query library        **
+// export const useFetchJobItems = (searchText: string) => {
+//   // const [debouncedSearchText, debounce] = useDebounceValue(searchText, MAX_SEARCH_DEBOUNCE_TIME_MS);
+//   const debouncedSearchText = useDebounce(
+//     searchText,
+//     MAX_SEARCH_DEBOUNCE_TIME_MS
+//   );
+
+//   // Alternative way to debounce search text using usehooks-ts library
+//   // useEffect(() => {
+//   //   if (searchText === debouncedSearchText) return;
+//   //   debounce(searchText);
+//   // }, [searchText, debouncedSearchText, debounce]);
+
+//   const [jobItems, setJobItems] = useState<JobItem[]>([]);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   // derived state - removed to prevent hook from being "too opinionated"
+//   // const jobItemsSliced = jobItems.slice(0, MAX_JOB_ITEMS);
+//   // const totalJobItems = jobItems.length;
+
+//   useEffect(() => {
+//     if (!debouncedSearchText) return;
+//     setIsLoading(true);
+//     // Flexible but less robust way to construct URL
+//     // const url = `${BASE_API_URL}?search=${debouncedSearchText}`;
+//     // Preferred way to construct URL for following reasons:
+//     // - URLSearchParams automatically encodes special characters
+//     // - URL object provides convenient methods to modify URL
+//     // - URL object provides a clean way to construct and read URL
+//     // - URL object provides a clean way to append query parameters
+//     const url = new URL(BASE_API_URL);
+//     const params = new URLSearchParams(url.search);
+//     params.set("search", debouncedSearchText);
+//     url.search = params.toString();
+
+//     // Mock backend server will always return random amount of data
+//     const fetchData = async () => {
+//       try {
+//         const response = await fetch(url);
+//         const data = await response.json();
+//         setJobItems(data.jobItems);
+//       } catch (error) {
+//         console.error(error);
+//       } finally {
+//         setIsLoading(false);
+//       }
+//     };
+
+//     fetchData();
+//   }, [debouncedSearchText]);
+
+//   return { jobItems, isLoading } as const;
+// };
+
+// ------------------  New implementation using useQuery  ------------------
+
+type FetchJobItemsResponse = {
+  public: boolean;
+  sorted: boolean;
+  jobItems: JobItem[];
+};
+
+const fetchData = async (
+  searchText: string
+): Promise<FetchJobItemsResponse> => {
+  const url = new URL(BASE_API_URL);
+  const params = new URLSearchParams(url.search);
+  params.set("search", searchText);
+  url.search = params.toString();
+
+  const response = await fetch(url);
+  if (!response.ok || response.status < 200 || response.status >= 300) {
+    let errorMessage = `Failed to fetch job item. Status: ${response.status}`;
+
+    const contentType = response.headers.get("Content-Type");
+    if (contentType && contentType.includes("application/json")) {
+      const errorData = await response.json();
+      errorMessage += ` - ${errorData.message}`;
+    } else {
+      const errorText = await response.text();
+      errorMessage += ` - ${errorText}`;
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  return await response.json();
+};
+
 export const useFetchJobItems = (searchText: string) => {
-  // const [debouncedSearchText, debounce] = useDebounceValue(searchText, MAX_SEARCH_DEBOUNCE_TIME_MS);
   const debouncedSearchText = useDebounce(
     searchText,
     MAX_SEARCH_DEBOUNCE_TIME_MS
   );
 
-  // Alternative way to debounce search text using usehooks-ts library
-  // useEffect(() => {
-  //   if (searchText === debouncedSearchText) return;
-  //   debounce(searchText);
-  // }, [searchText, debouncedSearchText, debounce]);
+  const { data, isInitialLoading, error } = useQuery(
+    ["job-items", debouncedSearchText], // cache key
+    () => fetchData(debouncedSearchText),
+    {
+      staleTime: MAX_CACHE_STALE_TIME_MS,
+      refetchOnWindowFocus: false, // don't refetch on window focus
+      retry: false, // don't retry on error
+      enabled: Boolean(debouncedSearchText), // fetch if search text is not empty
+      onError: (error) => console.error(error),
+    }
+  );
 
-  const [jobItems, setJobItems] = useState<JobItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const jobItems = data?.jobItems || [];
 
-  // derived state - removed to prevent hook from being "too opinionated"
-  // const jobItemsSliced = jobItems.slice(0, MAX_JOB_ITEMS);
-  // const totalJobItems = jobItems.length;
-
-  useEffect(() => {
-    if (!debouncedSearchText) return;
-    setIsLoading(true);
-    // Flexible but less robust way to construct URL
-    // const url = `${BASE_API_URL}?search=${debouncedSearchText}`;
-    // Preferred way to construct URL for following reasons:
-    // - URLSearchParams automatically encodes special characters
-    // - URL object provides convenient methods to modify URL
-    // - URL object provides a clean way to construct and read URL
-    // - URL object provides a clean way to append query parameters
-    const url = new URL(BASE_API_URL);
-    const params = new URLSearchParams(url.search);
-    params.set("search", debouncedSearchText);
-    url.search = params.toString();
-
-    // Mock backend server will always return random amount of data
-    const fetchData = async () => {
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        setJobItems(data.jobItems);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [debouncedSearchText]);
-
-  return { jobItems, isLoading } as const;
+  return { jobItems, isLoading: isInitialLoading, error } as const;
 };
 
 // **    Original implementation using useState and useEffect   **
@@ -97,6 +157,8 @@ export const useFetchJobItems = (searchText: string) => {
 
 //   return [job, isLoading] as const;
 // };
+
+// ------------------  New implementation using useQuery  ------------------
 
 type FetchJobItemByIdResponse = {
   public: boolean;
@@ -133,7 +195,7 @@ export const useFetchJobItemById = (jobId: number | null) => {
   // ["jobId", jobId] array is similar to useEffect dependencies array.
   // Here it helps with cache and cache invalidation
   const { data, isInitialLoading, error } = useQuery(
-    ["jobId", jobId],
+    ["job-id", jobId], // cache key
     () => (jobId ? fetchJobById(jobId) : null),
     {
       staleTime: MAX_CACHE_STALE_TIME_MS,
