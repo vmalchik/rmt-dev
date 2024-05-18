@@ -1,9 +1,12 @@
 import JobListItem from "./JobListItem";
+import { Job } from "./JobListItem";
 
-export function JobList({ jobItems }) {
+type JobListProps = { jobItems: Job[] };
+
+export function JobList({ jobItems }: JobListProps) {
   return (
     <ul className="job-list">
-      {jobItems.map((job) => (
+      {jobItems.map((job: Job) => (
         <JobListItem key={job.id} job={job} />
       ))}
     </ul>

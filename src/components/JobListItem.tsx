@@ -1,6 +1,6 @@
 import BookmarkIcon from "./BookmarkIcon";
 
-type Job = {
+export type Job = {
   id: number;
   title: string;
   badgeLetters: string;
