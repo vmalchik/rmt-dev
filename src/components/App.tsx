@@ -16,7 +16,11 @@ import { useFetchJobItems } from "../lib/hooks";
 
 function App() {
   const [searchText, setSearchText] = useState("");
-  const [jobItems, isLoading] = useFetchJobItems(searchText);
+  const {
+    isLoading,
+    jobItemsSliced: jobItems,
+    totalJobItems: totalResults,
+  } = useFetchJobItems(searchText);
 
   return (
     <>
@@ -31,7 +35,7 @@ function App() {
       <Container>
         <Sidebar>
           <SidebarTop>
-            <ResultsCount />
+            <ResultsCount total={totalResults} />
             <SortingControls />
           </SidebarTop>
           <JobList jobItems={jobItems} isLoading={isLoading} />

@@ -10,9 +10,8 @@ export const useFetchJobItems = (searchText: string) => {
 
   // derived state
   const jobItemsSliced = jobItems.slice(0, MAX_JOB_ITEMS);
+  const totalJobItems = jobItems.length;
 
-  // Note: React recommends fetching data in response to user action inside event handler
-  //       However, here we are using useEffect for usage/practice
   useEffect(() => {
     if (!searchText) return;
     setIsLoading(true);
@@ -36,7 +35,7 @@ export const useFetchJobItems = (searchText: string) => {
     fetchData();
   }, [searchText]);
 
-  return [jobItemsSliced, isLoading] as const;
+  return { jobItemsSliced, isLoading, totalJobItems } as const;
 };
 
 export const useActiveJobItemId = () => {
