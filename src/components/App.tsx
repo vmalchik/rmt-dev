@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Background from "./Background";
 import Container from "./Container";
 import Footer from "./Footer";
@@ -17,6 +17,22 @@ import { useFetchJobItems } from "../lib/hooks";
 function App() {
   const [searchText, setSearchText] = useState("");
   const [jobItems, isLoading] = useFetchJobItems(searchText);
+  const [activeJobItemId, setActiveJobItemId] = useState<string | null>(null);
+
+  const handleHashChange = () => {
+    const id = window.location.hash.slice(1);
+    setActiveJobItemId(id || null);
+  };
+  useEffect(() => {
+    // register event listener
+    window.addEventListener("hashchange", handleHashChange);
+    // handle initial hash check on page load
+    handleHashChange();
+    // unregister event listener
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
 
   return (
     <>
@@ -37,7 +53,7 @@ function App() {
           <JobList jobItems={jobItems} isLoading={isLoading} />
           <PaginationControls />
         </Sidebar>
-        <JobItemContent />
+        <JobItemContent jobId={activeJobItemId} />
       </Container>
       <Footer />
     </>
