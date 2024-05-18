@@ -39,3 +39,25 @@ export const useFetchJobItems = (searchText: string) => {
 
   return [jobItemsSliced, isLoading] as const;
 };
+
+export const useActiveJobItemId = () => {
+  const [activeJobItemId, setActiveJobItemId] = useState<number | null>(null);
+
+  const handleHashChange = () => {
+    // convert id to number
+    const id = +window.location.hash.slice(1);
+    setActiveJobItemId(id || null);
+  };
+  useEffect(() => {
+    // register event listener
+    window.addEventListener("hashchange", handleHashChange);
+    // handle initial hash check on page load
+    handleHashChange();
+    // unregister event listener
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  return activeJobItemId;
+};
