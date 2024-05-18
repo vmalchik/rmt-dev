@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
 import { JobDescription, JobItem } from "./types";
 import { BASE_API_URL } from "./constants";
+import { useQuery } from "@tanstack/react-query";
+
+// Notes:
+// Library for debouncing values in React
 // import { useDebounceValue } from "usehooks-ts";
 
+// Two popular libraries for data fetching in React:
+// https://www.npmjs.com/package/react-query
+// https://www.npmjs.com/package/swr
+
 const MAX_JOB_ITEMS = 7;
-const MAX_SEARCH_DEBOUNCE_TIME_MS = 250;
+const MAX_SEARCH_DEBOUNCE_TIME_MS = 250; // 0.25 seconds
+const MAX_CACHE_STALE_TIME_MS = 1000 * 60 * 60; // 1 hour
 
 export const useFetchJobItems = (searchText: string) => {
   // const [debouncedSearchText, debounce] = useDebounceValue(searchText, MAX_SEARCH_DEBOUNCE_TIME_MS);
@@ -60,6 +69,103 @@ export const useFetchJobItems = (searchText: string) => {
   return { jobItemsSliced, isLoading, totalJobItems } as const;
 };
 
+// **    Original implementation using useState and useEffect   **
+// **    Replaced with useQuery from react-query library        **
+// export const useFetchJobItemById = (jobId: number | null) => {
+//   const [job, setJob] = useState<JobDescription | null>(null);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   useEffect(() => {
+//     if (!jobId) return;
+//     setIsLoading(true);
+//     const url = new URL(`${BASE_API_URL}/${jobId}`);
+
+//     // Mock backend server will always return random amount of data
+//     const fetchData = async () => {
+//       try {
+//         const response = await fetch(url);
+//         const data = await response.json();
+//         setJob(data.jobItem);
+//       } catch (error) {
+//         console.error(error);
+//       } finally {
+//         setIsLoading(false);
+//       }
+//     };
+
+//     fetchData();
+//   }, [jobId]);
+
+//   return [job, isLoading] as const;
+// };
+
+type FetchJobItemByIdResponse = {
+  public: boolean;
+  jobItem: JobDescription;
+};
+
+const fetchJobById = async (
+  jobId: number
+): Promise<FetchJobItemByIdResponse> => {
+  const url = new URL(`${BASE_API_URL}/${jobId}`);
+  const response = await fetch(url);
+  if (!response.ok || response.status < 200 || response.status >= 300) {
+    let errorMessage = `Failed to fetch job item. Status: ${response.status}`;
+
+    const contentType = response.headers.get("Content-Type");
+    if (contentType && contentType.includes("application/json")) {
+      const errorData = await response.json();
+      errorMessage += ` - ${errorData.message}`;
+    } else {
+      const errorText = await response.text();
+      errorMessage += ` - ${errorText}`;
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  return await response.json();
+};
+
+export const useFetchJobItemById = (jobId: number | null) => {
+  // Following is not allowed in hooks. Cannot call conditionally in hooks
+  // if (!jobId) return { job: null, isLoading: false, error: null } as const;
+
+  // ["jobId", jobId] array is similar to useEffect dependencies array.
+  // Here it helps with cache and cache invalidation
+  const { data, isInitialLoading, error } = useQuery(
+    ["jobId", jobId],
+    () => (jobId ? fetchJobById(jobId) : null),
+    {
+      staleTime: MAX_CACHE_STALE_TIME_MS,
+      refetchOnWindowFocus: false, // don't refetch on window focus
+      retry: false, // don't retry on error
+      enabled: Boolean(jobId), // fetch data immediately on component mount if jobId is not null
+      onError: (error) => console.error(error),
+    }
+  );
+
+  const job = data?.jobItem;
+
+  return { job, isLoading: isInitialLoading, error } as const;
+};
+
+// Use generic type to make useDebounce hook more flexible
+// <T> let's TypeScript know that we are using a generic type
+// Generics establishes a relationship between:
+// - the type of the value passed to the hook
+// - the type of the value returned by the hook
+export const useDebounce = <T>(value: T, time: number = 500): T => {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => setDebouncedValue(value), time);
+    return () => clearTimeout(timerId);
+  }, [value, time]);
+
+  return debouncedValue;
+};
+
 export const useActiveJobItemId = () => {
   const [activeJobItemId, setActiveJobItemId] = useState<number | null>(null);
 
@@ -80,48 +186,4 @@ export const useActiveJobItemId = () => {
   }, []);
 
   return activeJobItemId;
-};
-
-export const useFetchJobItemById = (jobId: number | null) => {
-  const [job, setJob] = useState<JobDescription | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!jobId) return;
-    setIsLoading(true);
-    const url = new URL(`${BASE_API_URL}/${jobId}`);
-
-    // Mock backend server will always return random amount of data
-    const fetchData = async () => {
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        setJob(data.jobItem);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [jobId]);
-
-  return [job, isLoading] as const;
-};
-
-// Use generic type to make useDebounce hook more flexible
-// <T> let's TypeScript know that we are using a generic type
-// Generics establishes a relationship between:
-// - the type of the value passed to the hook
-// - the type of the value returned by the hook
-export const useDebounce = <T>(value: T, time: number = 500): T => {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timerId = setTimeout(() => setDebouncedValue(value), time);
-    return () => clearTimeout(timerId);
-  }, [value, time]);
-
-  return debouncedValue;
 };
