@@ -16,7 +16,7 @@ import { useFetchJobItems } from "../lib/hooks";
 
 function App() {
   const [searchText, setSearchText] = useState("");
-  const { jobItemsSliced: jobItems, isLoading } = useFetchJobItems(searchText);
+  const [jobItems, isLoading] = useFetchJobItems(searchText);
 
   return (
     <>

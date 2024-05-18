@@ -37,5 +37,5 @@ export const useFetchJobItems = (searchText: string) => {
     fetchData();
   }, [searchText]);
 
-  return { jobItemsSliced, isLoading };
+  return [jobItemsSliced, isLoading] as const;
 };
