@@ -78,7 +78,7 @@ type FetchJobItemsResponse = {
   jobItems: JobItem[];
 };
 
-const fetchData = async (
+const fetchJobs = async (
   searchText: string
 ): Promise<FetchJobItemsResponse> => {
   const url = new URL(BASE_API_URL);
@@ -87,19 +87,14 @@ const fetchData = async (
   url.search = params.toString();
 
   const response = await fetch(url);
-  if (!response.ok || response.status < 200 || response.status >= 300) {
-    let errorMessage = `Failed to fetch job item. Status: ${response.status}`;
-
-    const contentType = response.headers.get("Content-Type");
-    if (contentType && contentType.includes("application/json")) {
-      const errorData = await response.json();
-      errorMessage += ` - ${errorData.message}`;
-    } else {
-      const errorText = await response.text();
-      errorMessage += ` - ${errorText}`;
-    }
-
-    throw new Error(errorMessage);
+  // Handle redirections (3xx)
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error(`Redirection error: ${response.status}`);
+  }
+  // Handle client (4xx) or server errors (5xx)
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.description);
   }
 
   return await response.json();
@@ -113,7 +108,7 @@ export const useFetchJobItems = (searchText: string) => {
 
   const { data, isInitialLoading, error } = useQuery(
     ["job-items", debouncedSearchText], // cache key
-    () => fetchData(debouncedSearchText),
+    () => fetchJobs(debouncedSearchText),
     {
       staleTime: MAX_CACHE_STALE_TIME_MS,
       refetchOnWindowFocus: false, // don't refetch on window focus
@@ -170,20 +165,29 @@ const fetchJobById = async (
 ): Promise<FetchJobItemByIdResponse> => {
   const url = new URL(`${BASE_API_URL}/${jobId}`);
   const response = await fetch(url);
-  if (!response.ok || response.status < 200 || response.status >= 300) {
-    let errorMessage = `Failed to fetch job item. Status: ${response.status}`;
-
-    const contentType = response.headers.get("Content-Type");
-    if (contentType && contentType.includes("application/json")) {
-      const errorData = await response.json();
-      errorMessage += ` - ${errorData.message}`;
-    } else {
-      const errorText = await response.text();
-      errorMessage += ` - ${errorText}`;
-    }
-
-    throw new Error(errorMessage);
+  // Handle redirections (3xx)
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error(`Redirection error: ${response.status}`);
   }
+  // Handle client (4xx) or server errors (5xx)
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.description);
+  }
+  // if (!response.ok || response.status < 200 || response.status >= 300) {
+  //   let errorMessage = `Failed to fetch job item. Status: ${response.status}`;
+
+  //   const contentType = response.headers.get("Content-Type");
+  //   if (contentType && contentType.includes("application/json")) {
+  //     const errorData = await response.json();
+  //     errorMessage += ` - ${errorData.message}`;
+  //   } else {
+  //     const errorText = await response.text();
+  //     errorMessage += ` - ${errorText}`;
+  //   }
+
+  //   throw new Error(errorMessage);
+  // }
 
   return await response.json();
 };
