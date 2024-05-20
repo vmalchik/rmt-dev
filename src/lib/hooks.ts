@@ -12,7 +12,6 @@ import { handleError } from "./utils";
 // https://www.npmjs.com/package/react-query
 // https://www.npmjs.com/package/swr
 
-const MAX_SEARCH_DEBOUNCE_TIME_MS = 250; // 0.25 seconds
 const MAX_CACHE_STALE_TIME_MS = 1000 * 60 * 60; // 1 hour
 
 // **    Original implementation using useState and useEffect   **
@@ -102,19 +101,14 @@ const fetchJobs = async (
 };
 
 export const useFetchJobItems = (searchText: string) => {
-  const debouncedSearchText = useDebounce(
-    searchText,
-    MAX_SEARCH_DEBOUNCE_TIME_MS
-  );
-
   const { data, isInitialLoading, error } = useQuery(
-    ["job-items", debouncedSearchText], // cache key
-    () => fetchJobs(debouncedSearchText),
+    ["job-items", searchText], // cache key
+    () => fetchJobs(searchText),
     {
       staleTime: MAX_CACHE_STALE_TIME_MS,
       refetchOnWindowFocus: false, // don't refetch on window focus
       retry: false, // don't retry on error
-      enabled: Boolean(debouncedSearchText), // fetch if search text is not empty
+      enabled: Boolean(searchText), // fetch if search text is not empty
       onError: handleError,
     }
   );
