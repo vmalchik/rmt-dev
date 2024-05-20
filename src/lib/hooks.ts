@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { JobDescription, JobItem } from "./types";
 import { BASE_API_URL } from "./constants";
 import { useQuery } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { handleError } from "./utils";
 
 // Notes:
 // Library for debouncing values in React
@@ -115,10 +115,7 @@ export const useFetchJobItems = (searchText: string) => {
       refetchOnWindowFocus: false, // don't refetch on window focus
       retry: false, // don't retry on error
       enabled: Boolean(debouncedSearchText), // fetch if search text is not empty
-      onError: (error: Error) => {
-        console.log(error);
-        toast.error(error.message);
-      },
+      onError: handleError,
     }
   );
 
@@ -210,7 +207,7 @@ export const useFetchJobItemById = (jobId: number | null) => {
       refetchOnWindowFocus: false, // don't refetch on window focus
       retry: false, // don't retry on error
       enabled: Boolean(jobId), // fetch data immediately on component mount if jobId is not null
-      onError: (error) => console.error(error),
+      onError: handleError,
     }
   );
 
