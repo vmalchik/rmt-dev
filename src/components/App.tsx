@@ -16,7 +16,7 @@ import { useDebounce, useFetchJobItems } from "../lib/hooks";
 import { Toaster } from "react-hot-toast";
 import { PageControls } from "../lib/types";
 
-const MAX_JOB_ITEMS = 7;
+const MAX_PAGE_ITEMS = 7;
 const MAX_SEARCH_DEBOUNCE_TIME_MS = 250; // 0.25 seconds
 
 function App() {
@@ -30,7 +30,11 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
 
   // derived state / computed state
-  const jobItemsSliced = jobItems.slice(0, MAX_JOB_ITEMS);
+  const from = currentPage * MAX_PAGE_ITEMS - MAX_PAGE_ITEMS;
+  const to = currentPage * MAX_PAGE_ITEMS;
+  const totalPageCount = Math.ceil(jobItems.length / MAX_PAGE_ITEMS);
+  console.log(currentPage, totalPageCount);
+  const jobItemsSliced = jobItems.slice(from, to);
   const totalJobItems = jobItems.length;
 
   // event handlers / actions
@@ -61,6 +65,7 @@ function App() {
           <JobList jobItems={jobItemsSliced} isLoading={isLoading} />
           <PaginationControls
             currentPage={currentPage}
+            totalNumberOfPages={totalPageCount}
             onClick={handleChangePage}
           />
         </Sidebar>
