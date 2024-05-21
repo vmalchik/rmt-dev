@@ -160,6 +160,9 @@ const fetchJobById = async (
 ): Promise<FetchJobItemByIdResponse> => {
   const url = new URL(`${BASE_API_URL}/${jobId}`);
   const response = await fetch(url);
+  // Good to use schema validators like Zod to validate response data
+  // Alternative is to use ts-reset package
+
   // Handle redirections (3xx)
   if (response.status >= 300 && response.status < 400) {
     throw new Error(`Redirection error: ${response.status}`);
