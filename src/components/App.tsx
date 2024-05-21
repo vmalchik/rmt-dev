@@ -36,7 +36,7 @@ function App() {
   const to = currentPage * MAX_PAGE_ITEMS;
   const totalPageCount = Math.ceil(jobItems.length / MAX_PAGE_ITEMS);
 
-  const jobItemsSorted = jobItems.sort((a, b) => {
+  const jobItemsSorted = [...jobItems].sort((a, b) => {
     if (sortBy === SortBy.RELEVANT) {
       return b.relevanceScore - a.relevanceScore;
     } else if (sortBy === SortBy.RECENT) {
@@ -45,7 +45,7 @@ function App() {
     return 0;
   });
 
-  const jobItemsSliced = jobItemsSorted.slice(from, to);
+  const jobItemsSlicedAndSorted = [...jobItemsSorted].slice(from, to);
   const totalJobItems = jobItems.length;
 
   // event handlers / actions
@@ -78,7 +78,7 @@ function App() {
             <ResultsCount total={totalJobItems} />
             <SortingControls sortBy={sortBy} onClick={handleChangeSortBy} />
           </SidebarTop>
-          <JobList jobItems={jobItemsSliced} isLoading={isLoading} />
+          <JobList jobItems={jobItemsSlicedAndSorted} isLoading={isLoading} />
           <PaginationControls
             currentPage={currentPage}
             totalNumberOfPages={totalPageCount}
