@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { JobDescription, JobItem } from "./types";
 import { BASE_API_URL } from "./constants";
 import { useQuery } from "@tanstack/react-query";
 import { handleError } from "./utils";
+import { BookmarksContext } from "../contexts/BookmarksContextProvider";
 
 // Notes:
 // Library for debouncing values in React
@@ -249,4 +250,30 @@ export const useActiveJobItemId = () => {
   }, []);
 
   return activeJobItemId;
+};
+
+const initState = <T>(key: string, initialDefaultValue: T) => {
+  const value = localStorage.getItem(key);
+  return value ? JSON.parse(value) : initialDefaultValue;
+};
+
+export const useLocalStorage = <T>(key: string, initialDefaultValue: T) => {
+  const [data, setData] = useState<T>(initState(key, initialDefaultValue));
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(data));
+  }, [key, data]);
+
+  return [data, setData] as const;
+};
+
+export const useBookmarks = () => {
+  const context = useContext(BookmarksContext);
+  // check if context is null. alert developer if it is
+  if (!context) {
+    throw new Error(
+      "useBookmarks must be used within a BookmarksContextProvider"
+    );
+  }
+  return context;
 };
