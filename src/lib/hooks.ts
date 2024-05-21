@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { JobDescription, JobItem } from "./types";
 import { BASE_API_URL } from "./constants";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { handleError } from "./utils";
 import { BookmarksContext } from "../contexts/BookmarksContextProvider";
 
@@ -17,7 +17,7 @@ const MAX_CACHE_STALE_TIME_MS = 1000 * 60 * 60; // 1 hour
 
 // **    Original implementation using useState and useEffect   **
 // **    Replaced with useQuery from react-query library        **
-// export const useFetchJobItems = (searchText: string) => {
+// export const useSearchQuery = (searchText: string) => {
 //   // const [debouncedSearchText, debounce] = useDebounceValue(searchText, MAX_SEARCH_DEBOUNCE_TIME_MS);
 //   const debouncedSearchText = useDebounce(
 //     searchText,
@@ -79,7 +79,7 @@ type FetchJobItemsResponse = {
   jobItems: JobItem[];
 };
 
-const fetchJobs = async (
+const searchJobs = async (
   searchText: string
 ): Promise<FetchJobItemsResponse> => {
   const url = new URL(BASE_API_URL);
@@ -101,10 +101,10 @@ const fetchJobs = async (
   return await response.json();
 };
 
-export const useFetchJobItems = (searchText: string) => {
+export const useSearchQuery = (searchText: string) => {
   const { data, isInitialLoading, error } = useQuery(
-    ["job-items", searchText], // cache key
-    () => fetchJobs(searchText),
+    ["search-jobs", searchText], // cache key
+    () => searchJobs(searchText),
     {
       staleTime: MAX_CACHE_STALE_TIME_MS,
       refetchOnWindowFocus: false, // don't refetch on window focus
@@ -118,6 +118,35 @@ export const useFetchJobItems = (searchText: string) => {
 
   return { jobItems, isLoading: isInitialLoading, error } as const;
 };
+
+// -------------------------------------------------------------------------
+
+export const useFetchJobItems = (ids: number[]) => {
+  const results = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["job-id", id], // Match cache key with useFetchJobItemById for optimal caching
+      queryFn: () => fetchJobById(id), // Note: In Chrome you can only fetch 5 resources at a time rest will be queued into waterfall
+      staleTime: MAX_CACHE_STALE_TIME_MS,
+      refetchOnWindowFocus: false, // don't refetch on window focus
+      retry: false, // don't retry on error
+      enabled: Boolean(id), // fetch data immediately on component mount if jobId is not null
+      onError: handleError,
+    })),
+  });
+
+  const jobItems = results
+    .map((result) => result.data?.jobItem) // potentially adds undefined items into array
+    // Note: alternatively there is a ts-reset library to help address these TypeScript limitations
+    // .filter((jobItem) => jobItem !== undefined); // Remove undefined items - attempt to address TypeScript limitation
+    // .filter((jobItem) => !!jobItem); // Remove undefined items - attempt 2 to address TypeScript limitation
+    .filter((jobItem) => Boolean(jobItem)) as JobDescription[]; // Remove undefined items - Forced due to TypeScript limitation
+
+  const isLoading = results.some((result) => result.isLoading); // If at least one item in array is loading then all are loading
+
+  return { jobItems, isLoading } as const;
+};
+
+// -------------------------------------------------------------------------
 
 // **    Original implementation using useState and useEffect   **
 // **    Replaced with useQuery from react-query library        **
@@ -267,7 +296,7 @@ export const useLocalStorage = <T>(key: string, initialDefaultValue: T) => {
   return [data, setData] as const;
 };
 
-export const useBookmarks = () => {
+export const useBookmarksContext = () => {
   const context = useContext(BookmarksContext);
   // check if context is null. alert developer if it is
   if (!context) {
