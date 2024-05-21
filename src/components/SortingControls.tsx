@@ -1,3 +1,4 @@
+import React from "react";
 import { SortBy } from "../lib/enums";
 
 type SortingControlsProps = {
@@ -13,43 +14,38 @@ export default function SortingControls({
       <i className="fa-solid fa-arrow-down-short-wide"></i>
 
       <SortControlButton
-        sort={SortBy.RELEVANT}
-        onClick={onClick}
+        onClick={() => onClick(SortBy.RELEVANT)}
         isActive={SortBy.RELEVANT === sortBy}
-      />
+      >
+        {SortBy.RELEVANT}
+      </SortControlButton>
       <SortControlButton
-        sort={SortBy.RECENT}
-        onClick={onClick}
+        onClick={() => onClick(SortBy.RECENT)}
         isActive={SortBy.RECENT === sortBy}
-      />
-      {/* <button className="sorting__button sorting__button--relevant">
-        Relevant
-      </button>
-
-      <button className="sorting__button sorting__button--recent">
-        Recent
-      </button> */}
+      >
+        {SortBy.RECENT}
+      </SortControlButton>
     </section>
   );
 }
 
 type SortControlButtonProps = {
-  sort: SortBy;
-  onClick: (sortBy: SortBy) => void;
+  children: React.ReactNode;
+  onClick: () => void;
   isActive: boolean;
 };
 
 const SortControlButton = ({
-  sort,
+  children,
   onClick,
   isActive,
 }: SortControlButtonProps) => (
   <button
-    onClick={() => onClick(sort)}
+    onClick={onClick}
     className={`sorting__button sorting__button--${
       isActive ? "active" : "inactive"
     }`}
   >
-    {sort}
+    {children}
   </button>
 );
