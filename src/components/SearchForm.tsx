@@ -1,13 +1,10 @@
-type SearchFormProps = {
-  searchText: string;
-  setSearchText: (text: string) => void;
-};
-export default function SearchForm({
-  searchText,
-  setSearchText,
-}: SearchFormProps) {
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value);
+import { useSearchTextContext } from "../lib/hooks";
+
+export default function SearchForm() {
+  const { searchText, handleChangeSearchTest } = useSearchTextContext();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChangeSearchTest(e.target.value);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

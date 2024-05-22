@@ -5,6 +5,8 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { handleError } from "./utils";
 import { BookmarksContext } from "../contexts/BookmarksContextProvider";
 import { ActiveIdContext } from "../contexts/ActiveIdContextProvider";
+import { SearchTextContext } from "../contexts/SearchTextContextProvider";
+import { JobItemsContext } from "../contexts/JobItemsContextProvider";
 
 // Notes:
 // Library for debouncing values in React
@@ -102,15 +104,16 @@ const searchJobs = async (
   return await response.json();
 };
 
-export const useSearchQuery = (searchText: string) => {
+export const useSearchQuery = () => {
+  const { debouncedSearchText } = useSearchTextContext();
   const { data, isInitialLoading, error } = useQuery(
-    ["search-jobs", searchText], // cache key
-    () => searchJobs(searchText),
+    ["search-jobs", debouncedSearchText], // cache key
+    () => searchJobs(debouncedSearchText),
     {
       staleTime: MAX_CACHE_STALE_TIME_MS,
       refetchOnWindowFocus: false, // don't refetch on window focus
       retry: false, // don't retry on error
-      enabled: Boolean(searchText), // fetch if search text is not empty
+      enabled: Boolean(debouncedSearchText), // fetch if search text is not empty
       onError: handleError,
     }
   );
@@ -297,6 +300,24 @@ export const useLocalStorage = <T>(key: string, initialDefaultValue: T) => {
   return [data, setData] as const;
 };
 
+export const useOnClickOutside = (
+  refs: React.RefObject<HTMLElement>[],
+  callback: () => void
+) => {
+  useEffect(() => {
+    const callbackHandler = (e: MouseEvent) => {
+      const containsTarget = refs.some((ref) =>
+        ref.current?.contains(e.target as Node)
+      );
+      if (e.target instanceof HTMLElement && !containsTarget) {
+        callback();
+      }
+    };
+    document.addEventListener("click", callbackHandler);
+    return () => document.removeEventListener("click", callbackHandler);
+  }, [refs, callback]);
+};
+
 export const useBookmarksContext = () => {
   const context = useContext(BookmarksContext);
   // check if context is null. alert developer if it is
@@ -319,20 +340,24 @@ export const useActiveJobIdContext = () => {
   return context;
 };
 
-export const useOnClickOutside = (
-  refs: React.RefObject<HTMLElement>[],
-  callback: () => void
-) => {
-  useEffect(() => {
-    const callbackHandler = (e: MouseEvent) => {
-      const containsTarget = refs.some((ref) =>
-        ref.current?.contains(e.target as Node)
-      );
-      if (e.target instanceof HTMLElement && !containsTarget) {
-        callback();
-      }
-    };
-    document.addEventListener("click", callbackHandler);
-    return () => document.removeEventListener("click", callbackHandler);
-  }, [refs, callback]);
+export const useSearchTextContext = () => {
+  const context = useContext(SearchTextContext);
+  // check if context is null. alert developer if it is
+  if (!context) {
+    throw new Error(
+      "useSearchTextContext must be used within a SearchTextContextProvider"
+    );
+  }
+  return context;
+};
+
+export const useJobItemsContext = () => {
+  const context = useContext(JobItemsContext);
+  // check if context is null. alert developer if it is
+  if (!context) {
+    throw new Error(
+      "useJobItemsContext must be used within a JobItemsContextProvider"
+    );
+  }
+  return context;
 };
