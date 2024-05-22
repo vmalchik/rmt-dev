@@ -1,5 +1,5 @@
 import { createContext, useState } from "react";
-import { useSearchQuery } from "../lib/hooks";
+import { useSearchQuery, useSearchTextContext } from "../lib/hooks";
 import { SortBy } from "../lib/enums";
 import { JobItem, PageControls } from "../lib/types";
 
@@ -10,7 +10,7 @@ type JobItemsContextProviderProps = {
 type JobItemsContextType = {
   isLoading: boolean;
   currentPage: number;
-  sortBy: SortBy | null;
+  sortBy: SortBy;
   totalPageCount: number;
   jobItemsSlicedAndSorted: JobItem[];
   totalJobItems: number;
@@ -25,15 +25,18 @@ export const JobItemsContext = createContext<JobItemsContextType | null>(null);
 export default function JobItemsContextProvider({
   children,
 }: JobItemsContextProviderProps) {
-  const { isLoading, jobItems } = useSearchQuery();
+  // dependency on other context
+  const { debouncedSearchText } = useSearchTextContext();
+
+  // state
+  const { isLoading, jobItems } = useSearchQuery(debouncedSearchText);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState<SortBy | null>(null);
+  const [sortBy, setSortBy] = useState<SortBy>(SortBy.RELEVANT);
 
   // derived state / computed state
   const from = currentPage * MAX_PAGE_ITEMS - MAX_PAGE_ITEMS;
   const to = currentPage * MAX_PAGE_ITEMS;
   const totalPageCount = Math.ceil(jobItems.length / MAX_PAGE_ITEMS);
-
   const jobItemsSorted = [...jobItems].sort((a, b) => {
     if (sortBy === SortBy.RELEVANT) {
       return b.relevanceScore - a.relevanceScore;
@@ -57,7 +60,7 @@ export default function JobItemsContextProvider({
 
   const handleChangeSortBy = (sortBy: SortBy) => {
     setCurrentPage(1);
-    setSortBy((prev) => (prev === sortBy ? null : sortBy));
+    setSortBy(sortBy);
   };
 
   return (

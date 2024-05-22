@@ -104,16 +104,15 @@ const searchJobs = async (
   return await response.json();
 };
 
-export const useSearchQuery = () => {
-  const { debouncedSearchText } = useSearchTextContext();
+export const useSearchQuery = (searchText: string) => {
   const { data, isInitialLoading, error } = useQuery(
-    ["search-jobs", debouncedSearchText], // cache key
-    () => searchJobs(debouncedSearchText),
+    ["search-jobs", searchText], // cache key
+    () => searchJobs(searchText),
     {
       staleTime: MAX_CACHE_STALE_TIME_MS,
       refetchOnWindowFocus: false, // don't refetch on window focus
       retry: false, // don't retry on error
-      enabled: Boolean(debouncedSearchText), // fetch if search text is not empty
+      enabled: Boolean(searchText), // fetch if search text is not empty
       onError: handleError,
     }
   );
