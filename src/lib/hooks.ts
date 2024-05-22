@@ -4,6 +4,7 @@ import { BASE_API_URL } from "./constants";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { handleError } from "./utils";
 import { BookmarksContext } from "../contexts/BookmarksContextProvider";
+import { ActiveIdContext } from "../contexts/ActiveIdContextProvider";
 
 // Notes:
 // Library for debouncing values in React
@@ -302,6 +303,17 @@ export const useBookmarksContext = () => {
   if (!context) {
     throw new Error(
       "useBookmarks must be used within a BookmarksContextProvider"
+    );
+  }
+  return context;
+};
+
+export const useActiveJobIdContext = () => {
+  const context = useContext(ActiveIdContext);
+  // check if context is null. alert developer if it is
+  if (!context) {
+    throw new Error(
+      "useActiveJobIdContext must be used within a ActiveIdContextProvider"
     );
   }
   return context;
