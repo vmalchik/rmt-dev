@@ -1,5 +1,3 @@
-export type PageControls = "previous" | "next";
-
 export type JobItem = {
   id: number;
   title: string;

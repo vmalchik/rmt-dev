@@ -1,7 +1,7 @@
-import { createContext, useState } from "react";
+import { createContext, useMemo, useState } from "react";
 import { useSearchQuery, useSearchTextContext } from "../lib/hooks";
-import { SortBy } from "../lib/enums";
-import { JobItem, PageControls } from "../lib/types";
+import { PageControls, SortBy } from "../lib/enums";
+import { JobItem } from "../lib/types";
 
 type JobItemsContextProviderProps = {
   children: React.ReactNode;
@@ -34,26 +34,32 @@ export default function JobItemsContextProvider({
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.RELEVANT);
 
   // derived state / computed state
-  const from = currentPage * MAX_PAGE_ITEMS - MAX_PAGE_ITEMS;
-  const to = currentPage * MAX_PAGE_ITEMS;
-  const totalPageCount = Math.ceil(jobItems.length / MAX_PAGE_ITEMS);
-  const jobItemsSorted = [...jobItems].sort((a, b) => {
-    if (sortBy === SortBy.RELEVANT) {
-      return b.relevanceScore - a.relevanceScore;
-    } else if (sortBy === SortBy.RECENT) {
-      return a.daysAgo - b.daysAgo;
-    }
-    return 0;
-  });
-
-  const jobItemsSlicedAndSorted = [...jobItemsSorted].slice(from, to);
   const totalJobItems = jobItems.length;
+  const totalPageCount = Math.ceil(jobItems.length / MAX_PAGE_ITEMS);
+
+  // Optimization: useMemo to avoid re-sorting jobItems on every render (e.g. when currentPage changes)
+  const jobItemsSorted = useMemo(() => {
+    return [...jobItems].sort((a, b) => {
+      if (sortBy === SortBy.RELEVANT) {
+        return b.relevanceScore - a.relevanceScore;
+      } else if (sortBy === SortBy.RECENT) {
+        return a.daysAgo - b.daysAgo;
+      }
+      return 0;
+    });
+  }, [jobItems, sortBy]);
+
+  const jobItemsSlicedAndSorted = useMemo(() => {
+    const from = currentPage * MAX_PAGE_ITEMS - MAX_PAGE_ITEMS;
+    const to = currentPage * MAX_PAGE_ITEMS;
+    return [...jobItemsSorted].slice(from, to);
+  }, [jobItemsSorted, currentPage]);
 
   // event handlers / actions
   const handleChangePage = (direction: PageControls) => {
-    if (direction === "next") {
+    if (direction === PageControls.NEXT) {
       setCurrentPage((prev) => prev + 1);
-    } else if (direction === "previous") {
+    } else if (direction === PageControls.PREVIOUS) {
       setCurrentPage((prev) => prev - 1);
     }
   };

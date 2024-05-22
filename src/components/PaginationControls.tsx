@@ -1,5 +1,5 @@
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
-import { PageControls } from "../lib/types";
+import { PageControls } from "../lib/enums";
 import { useJobItemsContext } from "../lib/hooks";
 
 export default function PaginationControls() {
@@ -12,9 +12,9 @@ export default function PaginationControls() {
     <section className="pagination">
       {currentPage > 1 && (
         <PageButton
-          direction="previous"
+          direction={PageControls.PREVIOUS}
           disabled={previousPage < 1}
-          onClick={() => handleChangePage("previous")}
+          onClick={() => handleChangePage(PageControls.PREVIOUS)}
         >
           <ArrowLeftIcon />
           Page {previousPage}
@@ -22,7 +22,10 @@ export default function PaginationControls() {
       )}
 
       {currentPage < totalPageCount && (
-        <PageButton direction="next" onClick={() => handleChangePage("next")}>
+        <PageButton
+          direction={PageControls.NEXT}
+          onClick={() => handleChangePage(PageControls.NEXT)}
+        >
           Page {nextPage}
           <ArrowRightIcon />
         </PageButton>
