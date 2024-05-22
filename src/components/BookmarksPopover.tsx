@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import { useBookmarksContext } from "../lib/hooks";
 import JobList from "./JobList";
 
-type BookmarksPopoverProps = never; // Component does not receive any props
+type BookmarksPopoverProps = unknown; // Component does not receive any props
 
 const BookmarksPopover = forwardRef<HTMLDivElement, BookmarksPopoverProps>(
   (_, ref) => {
