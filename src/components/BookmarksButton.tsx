@@ -1,8 +1,10 @@
 import { TriangleDownIcon } from "@radix-ui/react-icons";
 import BookmarksPopover from "./BookmarksPopover";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function BookmarksButton() {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const handleClick = () => setIsOpen((prev) => !prev);
 
@@ -12,25 +14,36 @@ export default function BookmarksButton() {
     // e.stopPropagation();
     // e.preventDefault();
     // Reason: Clicking inside the popover will close it because the event will bubble up to the document and close the popover.
+    // const closePopover = (e: MouseEvent) => {
+    //   // NOTE SAFE: Reason - class name change will break the code
+    //   if (
+    //     e.target instanceof HTMLElement && // prove that e.target is an HTMLElement to avoid type error and to short-circuit the condition
+    //     !e.target.closest(".bookmarks-popover") && // exclude closing if event is inside the popover
+    //     !e.target.closest(".bookmarks-btn") // exclude closing if event is inside the button
+    //   )
+    //     setIsOpen(false);
+    // };
+    // document.addEventListener("click", closePopover); // e => closePopover(e) to check type requirement
+    // return () => document.removeEventListener("click", closePopover);
+
     const closePopover = (e: MouseEvent) => {
-      // NOTE SAFE: Reason - class name change will break the code
       if (
-        e.target instanceof HTMLElement && // prove that e.target is an HTMLElement to avoid type error and to short-circuit the condition
-        !e.target.closest(".bookmarks-popover") && // exclude closing if event is inside the popover
-        !e.target.closest(".bookmarks-btn") // exclude closing if event is inside the button
+        e.target instanceof HTMLElement &&
+        !buttonRef.current?.contains(e.target) &&
+        !popoverRef.current?.contains(e.target)
       )
         setIsOpen(false);
     };
-    document.addEventListener("click", closePopover); // e => closePopover(e) to check type requirement
-    () => document.removeEventListener("click", closePopover);
+    document.addEventListener("click", closePopover);
+    return () => document.removeEventListener("click", closePopover);
   }, []);
 
   return (
     <section>
-      <button onClick={handleClick} className="bookmarks-btn">
+      <button ref={buttonRef} onClick={handleClick} className="bookmarks-btn">
         Bookmarks <TriangleDownIcon />
       </button>
-      {isOpen && <BookmarksPopover />}
+      {isOpen && <BookmarksPopover ref={popoverRef} />}
     </section>
   );
 }
