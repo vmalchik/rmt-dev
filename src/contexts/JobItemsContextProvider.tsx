@@ -1,4 +1,4 @@
-import { createContext, useMemo, useState } from "react";
+import { createContext, useCallback, useMemo, useState } from "react";
 import { useSearchQuery, useSearchTextContext } from "../lib/hooks";
 import { PageControls, SortBy } from "../lib/enums";
 import { JobItem } from "../lib/types";
@@ -55,22 +55,22 @@ export default function JobItemsContextProvider({
     return [...jobItemsSorted].slice(from, to);
   }, [jobItemsSorted, currentPage]);
 
+  // event handlers / actions
+  const handleChangePage = useCallback((direction: PageControls) => {
+    if (direction === PageControls.NEXT) {
+      setCurrentPage((prev) => prev + 1);
+    } else if (direction === PageControls.PREVIOUS) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  }, []);
+
+  const handleChangeSortBy = useCallback((sortBy: SortBy) => {
+    setCurrentPage(1);
+    setSortBy(sortBy);
+  }, []);
+
   // useMemo to memoize the context value to avoid re-rendering consumers on every render
   const contextValue: JobItemsContextType = useMemo(() => {
-    // event handlers / actions
-    const handleChangePage = (direction: PageControls) => {
-      if (direction === PageControls.NEXT) {
-        setCurrentPage((prev) => prev + 1);
-      } else if (direction === PageControls.PREVIOUS) {
-        setCurrentPage((prev) => prev - 1);
-      }
-    };
-
-    const handleChangeSortBy = (sortBy: SortBy) => {
-      setCurrentPage(1);
-      setSortBy(sortBy);
-    };
-
     return {
       isLoading,
       currentPage,
@@ -88,6 +88,8 @@ export default function JobItemsContextProvider({
     totalPageCount,
     jobItemsSlicedAndSorted,
     totalJobItems,
+    handleChangePage,
+    handleChangeSortBy,
   ]);
 
   return (
