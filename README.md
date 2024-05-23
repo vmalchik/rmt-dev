@@ -4,9 +4,11 @@
 
 This application is designed specifically for developers who work remotely and are looking for job opportunities anywhere in the world. With our user-friendly interface, you can easily search for remote job openings, sort them by relevance or recent postings, bookmark your favorite jobs, and get detailed job descriptions and salary information.
 
-[![Watch the video](app_preview.png)](https://youtu.be/htY2iL6a0D8)
+[![Watch the video](app_preview.png)](https://youtu.be/pMbCnkourL4)
 
 ## Features
+
+This application is designed specifically for developers who work remotely and are looking for job opportunities anywhere in the world. With our user-friendly interface, you can easily search for remote job openings, sort them by relevance or recent postings, bookmark your favorite jobs, and get detailed job descriptions and salary information.
 
 - **Search Input Field**: Quickly find remote job opportunities by entering keywords, job titles, or companies.
 - **Job Cards**: View a list of job postings presented as cards, each containing key information about the job.
