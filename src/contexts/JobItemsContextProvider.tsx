@@ -55,33 +55,43 @@ export default function JobItemsContextProvider({
     return [...jobItemsSorted].slice(from, to);
   }, [jobItemsSorted, currentPage]);
 
-  // event handlers / actions
-  const handleChangePage = (direction: PageControls) => {
-    if (direction === PageControls.NEXT) {
-      setCurrentPage((prev) => prev + 1);
-    } else if (direction === PageControls.PREVIOUS) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
+  // useMemo to memoize the context value to avoid re-rendering consumers on every render
+  const contextValue: JobItemsContextType = useMemo(() => {
+    // event handlers / actions
+    const handleChangePage = (direction: PageControls) => {
+      if (direction === PageControls.NEXT) {
+        setCurrentPage((prev) => prev + 1);
+      } else if (direction === PageControls.PREVIOUS) {
+        setCurrentPage((prev) => prev - 1);
+      }
+    };
 
-  const handleChangeSortBy = (sortBy: SortBy) => {
-    setCurrentPage(1);
-    setSortBy(sortBy);
-  };
+    const handleChangeSortBy = (sortBy: SortBy) => {
+      setCurrentPage(1);
+      setSortBy(sortBy);
+    };
+
+    return {
+      isLoading,
+      currentPage,
+      sortBy,
+      totalPageCount,
+      jobItemsSlicedAndSorted,
+      totalJobItems,
+      handleChangePage,
+      handleChangeSortBy,
+    };
+  }, [
+    isLoading,
+    currentPage,
+    sortBy,
+    totalPageCount,
+    jobItemsSlicedAndSorted,
+    totalJobItems,
+  ]);
 
   return (
-    <JobItemsContext.Provider
-      value={{
-        isLoading,
-        currentPage,
-        sortBy,
-        totalPageCount,
-        jobItemsSlicedAndSorted,
-        totalJobItems,
-        handleChangePage,
-        handleChangeSortBy,
-      }}
-    >
+    <JobItemsContext.Provider value={contextValue}>
       {children}
     </JobItemsContext.Provider>
   );
