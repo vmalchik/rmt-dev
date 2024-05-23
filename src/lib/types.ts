@@ -15,7 +15,7 @@ export type JobDescription = JobItem & {
   description: string;
   duration: string;
   location: string;
-  qualifications: Array<string>; // two different ways to type arrays
-  reviews: string[]; // alternative way to type arrays
+  qualifications: Array<string>;
+  reviews: string[];
   salary: string;
 };
