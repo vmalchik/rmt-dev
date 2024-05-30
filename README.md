@@ -6,6 +6,8 @@ This application is designed specifically for developers who work remotely and a
 
 [![Watch the video](app_preview.png)](https://youtu.be/pMbCnkourL4)
 
+_(Right-click and select "Open link in new tab" to watch the video in a new tab.)_
+
 ## Features
 
 This application is designed specifically for developers who work remotely and are looking for job opportunities anywhere in the world. With our user-friendly interface, you can easily search for remote job openings, sort them by relevance or recent postings, bookmark your favorite jobs, and get detailed job descriptions and salary information.
