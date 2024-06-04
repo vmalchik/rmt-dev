@@ -8,7 +8,7 @@ type SearchTextContextProviderProps = {
 type SearchTextContextType = {
   searchText: string;
   debouncedSearchText: string;
-  handleChangeSearchTest: (newText: string) => void;
+  handleChangeSearchText: (newText: string) => void;
 };
 
 export const SearchTextContext = createContext<SearchTextContextType | null>(
@@ -26,7 +26,7 @@ export default function SearchTextContextProvider({
     MAX_SEARCH_DEBOUNCE_TIME_MS
   );
 
-  const handleChangeSearchTest = (newText: string) => {
+  const handleChangeSearchText = (newText: string) => {
     setSearchText(newText);
   };
   return (
@@ -34,7 +34,7 @@ export default function SearchTextContextProvider({
       value={{
         searchText,
         debouncedSearchText,
-        handleChangeSearchTest,
+        handleChangeSearchText,
       }}
     >
       {children}

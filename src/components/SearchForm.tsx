@@ -1,10 +1,10 @@
 import { useSearchTextContext } from "../lib/hooks";
 
 export default function SearchForm() {
-  const { searchText, handleChangeSearchTest } = useSearchTextContext();
+  const { searchText, handleChangeSearchText } = useSearchTextContext();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleChangeSearchTest(e.target.value);
+    handleChangeSearchText(e.target.value);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
